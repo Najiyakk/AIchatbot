@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🚀 ISRO AI Chatbot</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-image: url(/static/isro1.jpg);
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    } 
+
+    #container {
+      width: 400px;
+      max-width: 95%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    #header {
+      background: linear-gradient(135deg, #0a3d62, #38ada9);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    #chat {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #f0f5f9;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg {
+      max-width: 75%;
+      padding: 12px 16px;
+      border-radius: 15px;
+      font-size: 15px;
+      word-wrap: break-word;
+      line-height: 1.4;
+      animation: slideUp 0.3s ease-in-out;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #dcf8c6;
+      border-radius: 15px 15px 0 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #ffffff;
+      border-radius: 15px 15px 15px 0;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    #input-box {
+      display: flex;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      background: #f9f9f9;
+      align-items: center;
+    }
+
+    #question {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+
+    #question:focus {
+      border-color: #38ada9;
+      box-shadow: 0 0 8px rgba(56, 173, 169, 0.4);
+    }
+
+    #send-btn {
+      background: linear-gradient(135deg, #0a3d62, #38ada9);
+      color: white;
+      border: none;
+      padding: 12px 15px;
+      margin-left: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    #send-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(56, 173, 169, 0.7);
+    }
+
+    #teach-box {
+      display: none;
+      padding: 15px;
+      background: #fff3cd;
+      border-top: 1px solid #ddd;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    #teach-box p {
+      margin: 0 0 10px;
+      font-weight: bold;
+      color: #856404;
+    }
+
+    #teach-box input {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    #teach-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #teach-btn:hover {
+      background: #218838;
+    }
+
+    /* Clear Chat Button (now in header) */
+    #clear-btn {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: 0.3s;
+    }
+
+    #clear-btn:hover {
+      background: #cc0000;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.9);}
+      to {opacity: 1; transform: scale(1);}
+    }
+
+    @keyframes slideUp {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- Header with title + Clear Chat button -->
+    <div id="header">
+      🚀 ISRO AI Chatbot
+      <button id="clear-btn" onclick="clearChat()">Clear</button>
+    </div>
+
+    <div id="chat"></div>
+
+    <div id="input-box">
+      <input type="text" id="question" placeholder="Type your message...">
+      <button id="send-btn" onclick="sendQuestion()">➤</button>
+    </div>
+
+    <div id="teach-box">
+      <p>❓ I don't know that. Can you teach me?</p>
+      <input type="text" id="new-answer" placeholder="Enter correct answer">
+      <input type="text" id="new-keyword" placeholder="Enter keyword">
+      <button id="teach-btn" onclick="teachBot()">Teach</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendQuestion() {
+      let question = document.getElementById("question").value;
+      if (!question.trim()) return;
+
+      appendMessage("👤 " + question, "user");
+      document.getElementById("question").value = "";
+
+      let response = await fetch("/ask", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({question: question})
+      });
+      let data = await response.json();
+
+      appendMessage("🤖 " + data.answer, "bot");
+
+      if (data.learn) {
+        document.getElementById("teach-box").style.display = "block";
+      } else {
+        document.getElementById("teach-box").style.display = "none";
+      }
+    }
+
+    async function teachBot() {
+      let answer = document.getElementById("new-answer").value;
+      let keyword = document.getElementById("new-keyword").value;
+
+      if (!answer.trim() || !keyword.trim()) return;
+
+      let response = await fetch("/teach", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({answer: answer, keyword: keyword})
+      });
+      let data = await response.json();
+
+      appendMessage("🤖 " + data.message, "bot");
+      document.getElementById("teach-box").style.display = "none";
+    }
+
+    function appendMessage(text, sender) {
+      let chat = document.getElementById("chat");
+      let msg = document.createElement("div");
+      msg.className = "msg " + sender;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight; // Auto-scroll
+    }
+
+    // Clear Chat Function
+    function clearChat() {
+      document.getElementById("chat").innerHTML = "";
+    }
+
+    // Send on Enter
+    document.getElementById("question").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendQuestion();
+    });
+  </script>
+</body>
+</html> 
